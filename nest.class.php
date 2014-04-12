@@ -382,7 +382,7 @@ class Nest {
     public function getStatus() {
         $status = $this->doGET("/v2/mobile/" . $this->user);
         if (!is_object($status)) {
-            die("Error: Couldn't get status from NEST API: $status\n");
+            throw new RuntimeException("Error: Couldn't get status from NEST API: $status\n",0,0);
         }
         $this->last_status = $status;
         $this->saveCache();
@@ -484,7 +484,7 @@ class Nest {
         }
         $result = $this->doPOST(self::login_url, array('username' => $this->username, 'password' => $this->password));
         if (!isset($result->urls)) {
-            die("Error: Response to login request doesn't contain required transport URL. Response: '" . var_export($result, TRUE) . "'\n");
+            throw new RuntimeException("Error: Response to login request doesn't contain required transport URL. Response: '" . var_export($result, TRUE) . "'\n",0,0);
         }
         $this->transport_url = $result->urls->transport_url;
         $this->access_token = $result->access_token;
