@@ -61,10 +61,13 @@ class Nest {
         if ($username === null || $password === null) {
             throw new InvalidArgumentException('Nest credentials were not provided.');
         }
+        
+        $processUser = posix_getpwuid(posix_geteuid()); //Get Actual User
+        
         $this->username = $username;
         $this->password = $password;
-        $this->cookie_file = sys_get_temp_dir() . '/nest_php_cookies_' . md5($username . $password);
-        $this->cache_file = sys_get_temp_dir() . '/nest_php_cache_' . md5($username . $password);
+        $this->cookie_file = sys_get_temp_dir() . '/nest_php_cookies_' . md5($username . $password) . "_" . $processUser['name'];
+        $this->cache_file = sys_get_temp_dir() . '/nest_php_cache_' . md5($username . $password) . "_" . $processUser['name'];
         if ($this->use_cache()) {
             $this->loadCache();
         }
@@ -570,8 +573,10 @@ class Nest {
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);    // for security this should always be set to 2.
             curl_setopt($ch, CURLOPT_SSLVERSION, 1);        // Nest servers now require TLSv1; won't work with SSLv2 or even SSLv3!
 
+            $processUser = posix_getpwuid(posix_geteuid()); //Get Actual User
+            
             // Update cacert.pem (valid CA certificates list) from the cURL website once a month
-            $curl_cainfo = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'cacert.pem';
+            $curl_cainfo = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'cacert.pem' . "_" . $processUser['name'];
             $last_month = time()-30*24*60*60;
             if (!file_exists($curl_cainfo) || filemtime($curl_cainfo) < $last_month) {
                 file_put_contents($curl_cainfo, file_get_contents('http://curl.haxx.se/ca/cacert.pem'));
